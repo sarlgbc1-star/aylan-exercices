@@ -150,6 +150,7 @@
   .exo-card.francais { background: #E8F7EE; }
   .exo-card.anglais { background: #E3F2FD; }
   .exo-card.bonus { background: #FDEBEA; }
+  .exo-card.evaluation { background: #FFF8E1; border: 3px solid #FFC64B; }
 
   /* Exercise zone */
   #exercise-zone {
@@ -315,6 +316,11 @@
   </div>
 
   <div class="exo-grid" id="exo-grid">
+    <div class="exo-card evaluation" data-category="evaluation">
+      <span class="icon">📋</span>
+      <h3>Évaluation</h3>
+      <p>Test pour connaître ton niveau</p>
+    </div>
     <div class="exo-card math" data-category="calcul">
       <span class="icon">🔢</span>
       <h3>Calcul</h3>
@@ -361,6 +367,28 @@
 
 <script>
   const categories = {
+    evaluation: {
+      title: "Évaluation",
+      rtl: false,
+      isEvaluation: true,
+      questions: [
+        { emoji: "🔢", q: "5 + 3 = ?", choices: ["7","8","9"], correct: 1, subject: "calcul" },
+        { emoji: "🔢", q: "12 - 4 = ?", choices: ["7","8","9"], correct: 1, subject: "calcul" },
+        { emoji: "🔢", q: "Quel nombre vient juste après 19 ?", choices: ["18","20","21"], correct: 1, subject: "calcul" },
+        { emoji: "🔢", q: "Quel est le plus grand nombre ?", choices: ["35","53","28"], correct: 1, subject: "calcul" },
+        { emoji: "🐱", q: "اختر الكلمة الصحيحة", choices: ["قطة","كلب","بيت"], correct: 0, subject: "arabe", rtl: true },
+        { emoji: "☀️", q: "اختر الكلمة الصحيحة", choices: ["قمر","شمس","نجمة"], correct: 1, subject: "arabe", rtl: true },
+        { emoji: "🏠", q: "اختر الكلمة الصحيحة", choices: ["شجرة","باب","بيت"], correct: 2, subject: "arabe", rtl: true },
+        { emoji: "✏️", q: "ما هو الحرف الأول في كلمة «قلم» ؟", choices: ["ق","ل","م"], correct: 0, subject: "arabe", rtl: true },
+        { emoji: "🐱", q: "Choisis le bon mot", choices: ["chat","chien","oiseau"], correct: 0, subject: "francais" },
+        { emoji: "☀️", q: "Choisis le bon mot", choices: ["lune","soleil","étoile"], correct: 1, subject: "francais" },
+        { emoji: "🔤", q: "Quelle lettre commence le mot « livre » ?", choices: ["l","v","b"], correct: 0, subject: "francais" },
+        { emoji: "🐱", q: "Choose the right word", choices: ["dog","cat","bird"], correct: 1, subject: "anglais" },
+        { emoji: "🔴", q: "What color is this?", choices: ["blue","green","red"], correct: 2, subject: "anglais" },
+        { emoji: "🍎🍎🍎", q: "Count the apples", choices: ["two","three","four"], correct: 1, subject: "anglais" },
+        { emoji: "🔴🔵🔴🔵🔴", q: "Que vient après dans la suite ?", choices: ["🔴","🔵","🟢"], correct: 1, subject: "logique" }
+      ]
+    },
     calcul: {
       title: "Calcul",
       rtl: false,
@@ -461,7 +489,7 @@
   }
 
   const savedProgress = loadProgress();
-  let state = { key: null, index: 0, correct: 0 };
+  let state = { key: null, index: 0, correct: 0, bySubject: {} };
   let totalStars = savedProgress.stars;
   let totalCompleted = savedProgress.completed;
   let bestScores = savedProgress.best;
@@ -485,7 +513,7 @@
   });
 
   function startCategory(key) {
-    state = { key: key, index: 0, correct: 0 };
+    state = { key: key, index: 0, correct: 0, bySubject: {} };
     grid.style.display = 'none';
     zone.style.display = 'block';
     completionArea.style.display = 'none';
@@ -500,7 +528,8 @@
     const q = cat.questions[state.index];
     progressEl.textContent = "Question " + (state.index + 1) + " / " + cat.questions.length;
 
-    questionArea.setAttribute('dir', cat.rtl ? 'rtl' : 'ltr');
+    const isRtl = q.rtl || cat.rtl;
+    questionArea.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
 
     let html = '<div class="question-box">';
     html += '<span class="question-emoji">' + q.emoji + '</span>';
@@ -536,12 +565,23 @@
       state.correct++;
       totalStars++;
       starCountEl.textContent = totalStars;
+      if (q.subject) {
+        if (!state.bySubject) state.bySubject = {};
+        if (!state.bySubject[q.subject]) state.bySubject[q.subject] = { correct: 0, total: 0 };
+        state.bySubject[q.subject].correct++;
+        state.bySubject[q.subject].total++;
+      }
       saveProgress();
     } else {
       buttons[idx].classList.add('wrong');
       buttons[q.correct].classList.add('correct');
       feedback.textContent = "Presque ! La bonne réponse était surlignée.";
       feedback.className = "feedback ko";
+      if (q.subject) {
+        if (!state.bySubject) state.bySubject = {};
+        if (!state.bySubject[q.subject]) state.bySubject[q.subject] = { correct: 0, total: 0 };
+        state.bySubject[q.subject].total++;
+      }
     }
 
     nextBtn.style.display = 'inline-block';
@@ -564,6 +604,63 @@
     completionArea.style.display = 'block';
     totalCompleted++;
     progressTextEl.textContent = totalCompleted + " exercice" + (totalCompleted > 1 ? "s" : "") + " complété" + (totalCompleted > 1 ? "s" : "");
+
+    if (cat.isEvaluation) {
+      const bySubject = state.bySubject || {};
+      const subjectNames = {
+        calcul: "Calcul",
+        arabe: "Arabe",
+        francais: "Français",
+        anglais: "Anglais",
+        logique: "Logique"
+      };
+
+      let reportHtml = '';
+      let strengths = [];
+      let toImprove = [];
+
+      Object.keys(subjectNames).forEach(subj => {
+        if (bySubject[subj]) {
+          const score = bySubject[subj].correct;
+          const total = bySubject[subj].total;
+          const percent = Math.round((score / total) * 100);
+          const label = subjectNames[subj];
+          reportHtml += '<p style="margin:6px 0;"><strong>' + label + '</strong> : ' + score + '/' + total + ' (' + percent + '%)</p>';
+          if (percent >= 75) strengths.push(label);
+          else if (percent < 50) toImprove.push(label);
+        }
+      });
+
+      try {
+        localStorage.setItem('aylan-evaluation', JSON.stringify({
+          date: new Date().toISOString(),
+          totalCorrect: state.correct,
+          totalQuestions: cat.questions.length,
+          bySubject: bySubject
+        }));
+      } catch(e) {}
+
+      let advice = '';
+      if (strengths.length) advice += '<p>💪 Points forts : ' + strengths.join(', ') + '</p>';
+      if (toImprove.length) advice += '<p>🎯 À travailler : ' + toImprove.join(', ') + '</p>';
+      if (!strengths.length && !toImprove.length) advice += '<p>Tu es bien équilibré ! On va continuer tranquillement.</p>';
+
+      completionArea.innerHTML =
+        '<div class="completion-screen">' +
+        '<span class="big-emoji">📋</span>' +
+        '<h2>Résultat de l\'évaluation</h2>' +
+        '<p>Tu as eu <strong>' + state.correct + '</strong> bonnes réponses sur ' + cat.questions.length + '</p>' +
+        '<div style="text-align:left; max-width:280px; margin:16px auto; background:#F4FAFD; padding:14px 18px; border-radius:14px;">' +
+        reportHtml +
+        '</div>' +
+        advice +
+        '<p style="margin-top:16px; color:#5A7383; font-size:0.95rem;">On va adapter les prochains exercices en fonction de ces résultats 👍</p>' +
+        '<button class="restart-btn" id="restart-btn">🔁 Refaire le test</button>' +
+        '</div>';
+
+      document.getElementById('restart-btn').addEventListener('click', () => startCategory(state.key));
+      return;
+    }
 
     const previousBest = bestScores[state.key] || 0;
     const isNewRecord = state.correct > previousBest;
