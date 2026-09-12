@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mes exercices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #5EC4E8;
+    --sky-deep: #2FA9D6;
+    --sun: #FFC64B;
+    --coral: #FF6F5E;
+    --leaf: #6FCF7A;
+    --ink: #1F3B4D;
+    --cloud: #FFFFFF;
+    --paper: #F4FAFD;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 45%, var(--paper) 45%);
+    font-family: 'Nunito', sans-serif;
+    color: var(--ink);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  [dir="rtl"] { font-family: 'Tajawal', sans-serif; }
+
+  /* Header */
+  header {
+    position: relative;
+    padding: 40px 20px 90px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  header h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    color: var(--cloud);
+    margin: 0;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.08);
+  }
+
+  header p {
+    font-size: 1.1rem;
+    color: var(--cloud);
+    margin: 8px 0 0;
+    font-weight: 600;
+  }
+
+  .sun {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    background: var(--sun);
+    border-radius: 50%;
+    box-shadow: 0 0 0 8px rgba(255, 198, 75, 0.35);
+  }
+
+  .cloud-shape {
+    position: absolute;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50px;
+  }
+  .cloud-shape.c1 { width: 90px; height: 30px; top: 40px; left: 40px; }
+  .cloud-shape.c2 { width: 60px; height: 22px; top: 80px; left: 120px; }
+
+  /* Main content */
+  main {
+    max-width: 900px;
+    margin: -50px auto 0;
+    padding: 0 20px 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .score-bar {
+    background: var(--cloud);
+    border-radius: 20px;
+    padding: 16px 24px;
+    box-shadow: 0 8px 20px rgba(31, 59, 77, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+  }
+
+  .score-bar .star {
+    color: var(--sun);
+    margin-right: 6px;
+  }
+
+  /* Exercise cards grid */
+  .exo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .exo-card {
+    background: var(--cloud);
+    border-radius: 22px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(31, 59, 77, 0.10);
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .exo-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--sun);
+  }
+
+  .exo-card .icon {
+    font-size: 2.6rem;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .exo-card h3 {
+    font-family: 'Baloo 2', sans-serif;
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+  }
+
+  .exo-card p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #5A7383;
+  }
+
+  .exo-card.math { background: #FFF3E0; }
+  .exo-card.arabe { background: #F3EAFB; }
+  .exo-card.francais { background: #E8F7EE; }
+  .exo-card.anglais { background: #E3F2FD; }
+  .exo-card.bonus { background: #FDEBEA; }
+
+  /* Exercise zone */
+  #exercise-zone {
+    display: none;
+    background: var(--cloud);
+    border-radius: 24px;
+    padding: 30px;
+    margin-top: 10px;
+    box-shadow: 0 8px 20px rgba(31, 59, 77, 0.12);
+  }
+
+  .exo-progress {
+    font-weight: 700;
+    color: #5A7383;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+
+  #exercise-title {
+    font-family: 'Baloo 2', sans-serif;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .question-box {
+    text-align: center;
+    padding: 10px 0 26px;
+  }
+
+  .question-emoji {
+    font-size: 3.2rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .choices {
+    display: grid;
+    gap: 14px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  .choice-btn {
+    background: var(--paper);
+    border: 3px solid #DCEAF2;
+    border-radius: 16px;
+    padding: 16px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  [dir="rtl"] .choice-btn { font-family: 'Tajawal', sans-serif; }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--sky-deep);
+    transform: translateY(-2px);
+  }
+
+  .choice-btn:disabled { cursor: default; }
+
+  .choice-btn.correct {
+    background: #E4F8E8;
+    border-color: var(--leaf);
+    color: #1E7A34;
+  }
+
+  .choice-btn.wrong {
+    background: #FDEAEA;
+    border-color: var(--coral);
+    color: #B23B2E;
+  }
+
+  .feedback {
+    text-align: center;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.15rem;
+    margin-top: 18px;
+    min-height: 1.6em;
+  }
+
+  .feedback.ok { color: #1E7A34; }
+  .feedback.ko { color: #B23B2E; }
+
+  .action-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .next-btn, .back-btn, .restart-btn {
+    border: none;
+    border-radius: 14px;
+    padding: 12px 26px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+  }
+
+  .next-btn { background: var(--sky-deep); color: white; display: none; }
+  .back-btn { background: #E4E9EE; color: var(--ink); }
+  .restart-btn { background: var(--leaf); color: white; }
+
+  .completion-screen { text-align: center; padding: 10px 0; }
+  .completion-screen .big-emoji { font-size: 3.6rem; display: block; margin-bottom: 10px; }
+  .completion-screen h2 { font-family: 'Baloo 2', sans-serif; margin: 0 0 8px; }
+  .completion-screen p { color: #5A7383; font-weight: 600; }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: #6E8698;
+    font-size: 0.85rem;
+  }
+
+  /* ---- Optimisations téléphone ---- */
+  @media (max-width: 480px) {
+    header { padding: 28px 16px 70px; }
+    .sun { width: 46px; height: 46px; top: 14px; right: 18px; box-shadow: 0 0 0 5px rgba(255, 198, 75, 0.35); }
+    .cloud-shape.c1 { width: 60px; height: 20px; top: 18px; left: 16px; }
+    .cloud-shape.c2 { width: 40px; height: 16px; top: 44px; left: 70px; }
+    main { margin-top: -40px; padding: 0 14px 40px; }
+    .score-bar { flex-direction: column; gap: 8px; text-align: center; padding: 14px 16px; font-size: 0.95rem; }
+    .exo-grid { grid-template-columns: 1fr; gap: 14px; }
+    .exo-card { display: flex; align-items: center; gap: 14px; text-align: left; padding: 16px 18px; min-height: 44px; }
+    .exo-card .icon { font-size: 2rem; margin-bottom: 0; }
+    .exo-card h3 { font-size: 1.05rem; }
+    .exo-card p { font-size: 0.85rem; }
+    #exercise-zone { padding: 20px 16px; }
+    .question-text { font-size: 1.2rem; }
+    .choice-btn { font-size: 1.05rem; padding: 14px; }
+    .back-btn, .next-btn, .restart-btn { width: 100%; padding: 13px 20px; font-size: 1.05rem; }
+    .action-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cloud-shape c1"></div>
+  <div class="cloud-shape c2"></div>
+  <div class="sun"></div>
+  <h1>Mes exercices du jour</h1>
+  <p>Choisis une activité et amuse-toi bien !</p>
+</header>
+
+<main>
+  <div class="score-bar">
+    <span><span class="star">★</span> <span id="star-count">0</span> étoiles</span>
+    <span id="progress-text">0 exercice complété</span>
+  </div>
+
+  <div class="exo-grid" id="exo-grid">
+    <div class="exo-card math" data-category="calcul">
+      <span class="icon">🔢</span>
+      <h3>Calcul</h3>
+      <p>Additions et soustractions</p>
+    </div>
+    <div class="exo-card arabe" data-category="arabe">
+      <span class="icon">📖</span>
+      <h3>القراءة (عربي)</h3>
+      <p>كلمات وحروف بسيطة</p>
+    </div>
+    <div class="exo-card francais" data-category="francais">
+      <span class="icon">📚</span>
+      <h3>Lecture (Français)</h3>
+      <p>Mots et petites phrases</p>
+    </div>
+    <div class="exo-card anglais" data-category="anglais">
+      <span class="icon">🔤</span>
+      <h3>Reading (English)</h3>
+      <p>Simple words and colors</p>
+    </div>
+    <div class="exo-card bonus" data-category="bonus">
+      <span class="icon">🎨</span>
+      <h3>Bonus</h3>
+      <p>Jeu surprise</p>
+    </div>
+  </div>
+
+  <div id="exercise-zone">
+    <div class="exo-progress" id="exo-progress"></div>
+    <h2 id="exercise-title">Exercice</h2>
+
+    <div id="question-area"></div>
+
+    <div id="completion-area" style="display:none;"></div>
+
+    <div class="action-row">
+      <button class="back-btn" id="back-btn">⬅ Retour</button>
+      <button class="next-btn" id="next-btn">Suivant ➜</button>
+    </div>
+  </div>
+</main>
+
+<footer>Fait avec ❤️ pour toi</footer>
+
+<script>
+  const categories = {
+    calcul: {
+      title: "Calcul",
+      rtl: false,
+      questions: [
+        { emoji: "🔢", q: "3 + 4 = ?", choices: ["7","6","8"], correct: 0 },
+        { emoji: "🔢", q: "9 - 5 = ?", choices: ["5","3","4"], correct: 2 },
+        { emoji: "🔢", q: "8 + 6 = ?", choices: ["13","14","15"], correct: 1 },
+        { emoji: "🔢", q: "Quel nombre vient juste après 17 ?", choices: ["19","18","16"], correct: 1 },
+        { emoji: "🔢", q: "12 - 7 = ?", choices: ["4","6","5"], correct: 2 },
+        { emoji: "🔢", q: "Quel est le plus grand nombre ?", choices: ["42","24","19"], correct: 0 },
+        { emoji: "🔢", q: "10 - 3 = ?", choices: ["8","7","6"], correct: 1 },
+        { emoji: "🔢", q: "5 + 5 = ?", choices: ["11","9","10"], correct: 2 }
+      ]
+    },
+    arabe: {
+      title: "القراءة (عربي)",
+      rtl: true,
+      questions: [
+        { emoji: "🐱", q: "اختر الكلمة الصحيحة", choices: ["قطة","كلب","بيت"], correct: 0 },
+        { emoji: "📖", q: "اختر الكلمة الصحيحة", choices: ["كرسي","كتاب","شمس"], correct: 1 },
+        { emoji: "☀️", q: "اختر الكلمة الصحيحة", choices: ["قمر","شمس","نجمة"], correct: 1 },
+        { emoji: "🏠", q: "اختر الكلمة الصحيحة", choices: ["شجرة","باب","بيت"], correct: 2 },
+        { emoji: "✏️", q: "ما هو الحرف الأول في كلمة «قلم» ؟", choices: ["ق","ل","م"], correct: 0 },
+        { emoji: "🔤", q: "أي كلمة تبدأ بحرف «ب» ؟", choices: ["تفاحة","باب","سيارة"], correct: 1 },
+        { emoji: "🍎", q: "اختر الكلمة الصحيحة", choices: ["تفاحة","موزة","برتقالة"], correct: 0 },
+        { emoji: "🔡", q: "كم عدد حروف كلمة «قطة» ؟", choices: ["2","3","4"], correct: 1 }
+      ]
+    },
+    francais: {
+      title: "Lecture (Français)",
+      rtl: false,
+      questions: [
+        { emoji: "🐱", q: "Choisis le bon mot", choices: ["chat","chien","oiseau"], correct: 0 },
+        { emoji: "☀️", q: "Choisis le bon mot", choices: ["lune","soleil","étoile"], correct: 1 },
+        { emoji: "📖", q: "Choisis le bon mot", choices: ["stylo","table","livre"], correct: 2 },
+        { emoji: "🔤", q: "Quelle lettre commence le mot « chat » ?", choices: ["h","c","a"], correct: 1 },
+        { emoji: "🌞", q: "Complète : Le ___ est jaune.", choices: ["ballon","soleil","chat"], correct: 1 },
+        { emoji: "🔡", q: "Combien de lettres dans le mot « chat » ?", choices: ["3","4","5"], correct: 1 },
+        { emoji: "🍎", q: "Choisis le bon mot", choices: ["pomme","banane","orange"], correct: 0 },
+        { emoji: "🎵", q: "Quel mot rime avec « chat » ?", choices: ["chapeau","rat","table"], correct: 1 }
+      ]
+    },
+    anglais: {
+      title: "Reading (English)",
+      rtl: false,
+      questions: [
+        { emoji: "🐱", q: "Choose the right word", choices: ["dog","cat","bird"], correct: 1 },
+        { emoji: "🔴", q: "What color is this?", choices: ["blue","green","red"], correct: 2 },
+        { emoji: "🍎🍎🍎", q: "Count the apples", choices: ["two","three","four"], correct: 1 },
+        { emoji: "☀️", q: "Choose the right word", choices: ["moon","sun","star"], correct: 1 },
+        { emoji: "🔤", q: "What comes after A, B, C ?", choices: ["E","D","F"], correct: 1 },
+        { emoji: "📖", q: "Choose the right word", choices: ["book","pen","chair"], correct: 0 },
+        { emoji: "🌤️", q: "Which color is the sky?", choices: ["blue","red","yellow"], correct: 0 },
+        { emoji: "🐈", q: "How many legs does a cat have?", choices: ["two","three","four"], correct: 2 }
+      ]
+    },
+    bonus: {
+      title: "Bonus",
+      rtl: false,
+      questions: [
+        { emoji: "🌞", q: "Vrai ou faux : Le soleil est une étoile.", choices: ["Vrai","Faux"], correct: 0 },
+        { emoji: "🕷️", q: "Combien de pattes a une araignée ?", choices: ["6","8","10"], correct: 1 },
+        { emoji: "🐮", q: "Quel animal dit « miaou » ?", choices: ["🐶","🐱","🐮"], correct: 1 },
+        { emoji: "🔴🔵🔴🔵🔴", q: "Que vient après dans la suite ?", choices: ["🔴","🔵","🟢"], correct: 1 },
+        { emoji: "🇩🇿", q: "Quelle est la capitale de l'Algérie ?", choices: ["Oran","Béjaïa","Alger"], correct: 2 },
+        { emoji: "📅", q: "Combien de jours y a-t-il dans une semaine ?", choices: ["5","6","7"], correct: 2 }
+      ]
+    }
+  };
+
+  const STORAGE_KEY = 'iris-exercices-progress';
+
+  function loadProgress() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { stars: 0, completed: 0, best: {} };
+      const parsed = JSON.parse(raw);
+      return {
+        stars: parsed.stars || 0,
+        completed: parsed.completed || 0,
+        best: parsed.best || {}
+      };
+    } catch (e) {
+      return { stars: 0, completed: 0, best: {} };
+    }
+  }
+
+  function saveProgress() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        stars: totalStars,
+        completed: totalCompleted,
+        best: bestScores
+      }));
+    } catch (e) {
+      /* stockage indisponible, on continue sans sauvegarder */
+    }
+  }
+
+  const savedProgress = loadProgress();
+  let state = { key: null, index: 0, correct: 0 };
+  let totalStars = savedProgress.stars;
+  let totalCompleted = savedProgress.completed;
+  let bestScores = savedProgress.best;
+
+  const grid = document.getElementById('exo-grid');
+  const zone = document.getElementById('exercise-zone');
+  const title = document.getElementById('exercise-title');
+  const progressEl = document.getElementById('exo-progress');
+  const questionArea = document.getElementById('question-area');
+  const completionArea = document.getElementById('completion-area');
+  const backBtn = document.getElementById('back-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const starCountEl = document.getElementById('star-count');
+  const progressTextEl = document.getElementById('progress-text');
+
+  starCountEl.textContent = totalStars;
+  progressTextEl.textContent = totalCompleted + " exercice" + (totalCompleted > 1 ? "s" : "") + " complété" + (totalCompleted > 1 ? "s" : "");
+
+  document.querySelectorAll('.exo-card').forEach(card => {
+    card.addEventListener('click', () => startCategory(card.dataset.category));
+  });
+
+  function startCategory(key) {
+    state = { key: key, index: 0, correct: 0 };
+    grid.style.display = 'none';
+    zone.style.display = 'block';
+    completionArea.style.display = 'none';
+    questionArea.style.display = 'block';
+    title.textContent = categories[key].title;
+    nextBtn.style.display = 'none';
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const cat = categories[state.key];
+    const q = cat.questions[state.index];
+    progressEl.textContent = "Question " + (state.index + 1) + " / " + cat.questions.length;
+
+    questionArea.setAttribute('dir', cat.rtl ? 'rtl' : 'ltr');
+
+    let html = '<div class="question-box">';
+    html += '<span class="question-emoji">' + q.emoji + '</span>';
+    html += '<div class="question-text">' + q.q + '</div>';
+    html += '</div>';
+    html += '<div class="choices">';
+    q.choices.forEach((choice, i) => {
+      html += '<button class="choice-btn" data-idx="' + i + '">' + choice + '</button>';
+    });
+    html += '</div>';
+    html += '<div class="feedback" id="feedback"></div>';
+
+    questionArea.innerHTML = html;
+    nextBtn.style.display = 'none';
+
+    questionArea.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.idx)));
+    });
+  }
+
+  function selectAnswer(idx) {
+    const cat = categories[state.key];
+    const q = cat.questions[state.index];
+    const buttons = questionArea.querySelectorAll('.choice-btn');
+    const feedback = document.getElementById('feedback');
+
+    buttons.forEach(b => b.disabled = true);
+
+    if (idx === q.correct) {
+      buttons[idx].classList.add('correct');
+      feedback.textContent = "Bravo ! ⭐";
+      feedback.className = "feedback ok";
+      state.correct++;
+      totalStars++;
+      starCountEl.textContent = totalStars;
+      saveProgress();
+    } else {
+      buttons[idx].classList.add('wrong');
+      buttons[q.correct].classList.add('correct');
+      feedback.textContent = "Presque ! La bonne réponse était surlignée.";
+      feedback.className = "feedback ko";
+    }
+
+    nextBtn.style.display = 'inline-block';
+  }
+
+  nextBtn.addEventListener('click', () => {
+    const cat = categories[state.key];
+    state.index++;
+    if (state.index < cat.questions.length) {
+      renderQuestion();
+    } else {
+      showCompletion();
+    }
+  });
+
+  function showCompletion() {
+    const cat = categories[state.key];
+    questionArea.style.display = 'none';
+    nextBtn.style.display = 'none';
+    completionArea.style.display = 'block';
+    totalCompleted++;
+    progressTextEl.textContent = totalCompleted + " exercice" + (totalCompleted > 1 ? "s" : "") + " complété" + (totalCompleted > 1 ? "s" : "");
+
+    const previousBest = bestScores[state.key] || 0;
+    const isNewRecord = state.correct > previousBest;
+    if (isNewRecord) bestScores[state.key] = state.correct;
+    saveProgress();
+
+    completionArea.innerHTML =
+      '<div class="completion-screen">' +
+      '<span class="big-emoji">🎉</span>' +
+      '<h2>Bravo !</h2>' +
+      '<p>Tu as eu ' + state.correct + ' bonnes réponses sur ' + cat.questions.length + '</p>' +
+      (isNewRecord ? '<p>🏆 Nouveau record pour cette activité !</p>' : '<p>Meilleur score : ' + bestScores[state.key] + ' / ' + cat.questions.length + '</p>') +
+      '<button class="restart-btn" id="restart-btn">🔁 Recommencer</button>' +
+      '</div>';
+
+    document.getElementById('restart-btn').addEventListener('click', () => startCategory(state.key));
+  }
+
+  backBtn.addEventListener('click', () => {
+    zone.style.display = 'none';
+    grid.style.display = 'grid';
+  });
+</script>
+
+</body>
+</html>
