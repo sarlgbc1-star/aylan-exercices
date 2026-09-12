@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Les aventures d’Aylan — V4</title>
+<style>
+:root{--ink:#203b4c;--sky:#62c7e8;--blue:#238bc1;--green:#62c978;--red:#f06b62;--yellow:#ffd15c;--bg:#f4fafd}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:var(--ink);background:linear-gradient(var(--sky) 0 190px,var(--bg) 190px);min-height:100vh}header{text-align:center;color:#fff;padding:28px 15px 52px}h1{margin:0;font-size:clamp(2rem,7vw,3rem)}main{max-width:1000px;margin:-24px auto 40px;padding:0 14px}.panel{background:#fff;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 6px 18px #203b4c18}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.grid,.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}.card{border:0;border-radius:18px;padding:20px;background:#fff;box-shadow:0 5px 15px #203b4c18;cursor:pointer;color:var(--ink);font:inherit;text-align:left}.card span{font-size:2.2rem}.card b{display:block;font-size:1.1rem;margin:8px 0}.skill{background:var(--bg);padding:14px;border-radius:14px}.bar{height:9px;background:#dceaf2;border-radius:8px;overflow:hidden;margin-top:8px}.fill{height:100%;background:var(--green)}button{border:0;border-radius:12px;padding:11px 16px;background:var(--blue);color:#fff;font-weight:bold;cursor:pointer;font-size:1rem}.secondary{background:#e7edf1;color:var(--ink)}.hidden{display:none!important}.quiz{text-align:center}.emoji{font-size:4rem}.choices{display:grid;gap:12px;max-width:650px;margin:20px auto}.choice{background:var(--bg);color:var(--ink);border:3px solid #dceaf2}.choice.correct{background:#e4f8e8!important;border-color:var(--green)!important}.choice.wrong{background:#fdeaea!important;border-color:var(--red)!important}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#e7edf1;font-size:.85rem;margin:2px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.feedback{font-size:1.1rem;min-height:30px;margin-top:12px}.small{color:#587383;font-size:.92rem}.mission{border-left:6px solid var(--yellow);background:#fffaf0;padding:14px;border-radius:12px}.result{text-align:center}.big{font-size:3rem}.note{padding:10px;border-radius:12px;background:#fff4ce;margin-top:12px}.dev{font-size:.8rem;color:#79909d;margin-top:12px}
+</style></head>
+<body>
+<header><h1>Les aventures d’Aylan 🚀</h1><p>V4 — un parcours qui s’adapte à tes progrès</p></header>
+<main>
+<section class="panel top"><strong>⭐ <span id="stars">0</span></strong><span>Réponses : <b id="done">0</b></span><button id="back" class="secondary">⬅ Retour V3.1</button></section>
+<section class="panel"><h2>📊 Mon profil</h2><div id="profile" class="skills"></div></section>
+<section class="panel"><h2>🎯 Mission du jour</h2><div id="mission" class="mission"></div><div class="actions"><button id="missionBtn">Commencer 🚀</button></div></section>
+<section id="home" class="grid"></section>
+<section id="quiz" class="panel hidden"><div class="top"><span id="progress"></span><span id="level"></span><button id="quit" class="secondary">⬅ Quitter</button></div><div id="question" class="quiz"></div><div class="actions"><button id="next" class="hidden">Suivant ➜</button></div></section>
+<section id="result" class="panel hidden result"></section>
+</main><footer>V4 — apprendre, pratiquer, réussir ❤️</footer>
+<script>
+'use strict';
+const SK={addition:'Addition',soustraction:'Soustraction',suites:'Suites numériques',comparaison:'Comparaison',mots_ar:'Mots arabes',lettres_ar:'Lettres arabes',vocab_ar:'Vocabulaire arabe',mots_fr:'Mots français',lecture_fr:'Lecture française',vocab_fr:'Vocabulaire français',mots_en:'Mots anglais',couleurs_en:'Couleurs anglaises',comprehension_en:'Compréhension anglaise',logique:'Logique'};
+const CAT={evaluation:['📋','Évaluation','Une question par compétence'],calcul:['🔢','Calcul','Nombres et opérations'],arabe:['📖','العربية','Mots, lettres et vocabulaire'],francais:['📚','Français','Mots, lecture et vocabulaire'],anglais:['🔤','English','Words, colors and meaning'],logique:['🧩','Logique','Réfléchir et trouver la règle']};
+const BANK={
+ mots_ar:[
+  {emoji:'🐱',text:'Quel mot signifie « chat » ?',choices:['قطة','كلب','بيت'],answer:'قطة'},
+  {emoji:'🐶',text:'Quel mot signifie « chien » ?',choices:['بيت','كلب','شجرة'],answer:'كلب'},
+  {emoji:'🏠',text:'Quel mot signifie « maison » ?',choices:['باب','بيت','قلم'],answer:'بيت'},
+  {emoji:'🌳',text:'Quel mot signifie « arbre » ?',choices:['شجرة','قمر','كتاب'],answer:'شجرة'},
+  {emoji:'📖',text:'Quel mot signifie « livre » ?',choices:['كرسي','كتاب','باب'],answer:'كتاب'}],
+ lettres_ar:[
+  {emoji:'✏️',text:'Quelle est la première lettre de « قلم » ?',choices:['ق','ل','م'],answer:'ق'},
+  {emoji:'📖',text:'Quelle est la première lettre de « كتاب » ?',choices:['ت','ك','ب'],answer:'ك'},
+  {emoji:'🐱',text:'Quelle est la première lettre de « قطة » ?',choices:['ط','ة','ق'],answer:'ق'},
+  {emoji:'🏠',text:'Quelle est la première lettre de « بيت » ?',choices:['ب','ت','ي'],answer:'ب'},
+  {emoji:'🌙',text:'Quelle est la première lettre de « قمر » ?',choices:['ر','م','ق'],answer:'ق'}],
+ vocab_ar:[
+  {emoji:'☀️',text:'Choisis « soleil » en arabe.',choices:['قمر','شمس','نجمة'],answer:'شمس'},
+  {emoji:'🌙',text:'Choisis « lune » en arabe.',choices:['شمس','قمر','بحر'],answer:'قمر'},
+  {emoji:'🚪',text:'Choisis « porte » en arabe.',choices:['باب','بيت','قلم'],answer:'باب'},
+  {emoji:'📚',text:'Choisis « livre » en arabe.',choices:['كرسي','كتاب','شجرة'],answer:'كتاب'},
+  {emoji:'🌊',text:'Choisis « mer » en arabe.',choices:['بحر','باب','قمر'],answer:'بحر'}],
+ mots_fr:[
+  {emoji:'🐱',text:'Quel mot correspond à l’animal ?',choices:['chat','chien','oiseau'],answer:'chat'},
+  {emoji:'🐶',text:'Quel mot correspond à l’animal ?',choices:['poisson','chien','chat'],answer:'chien'},
+  {emoji:'🍎',text:'Quel mot correspond au fruit ?',choices:['maison','pomme','table'],answer:'pomme'},
+  {emoji:'🏠',text:'Quel mot correspond au bâtiment ?',choices:['maison','soleil','livre'],answer:'maison'},
+  {emoji:'📖',text:'Quel mot correspond à ce qu’on lit ?',choices:['chaise','livre','arbre'],answer:'livre'}],
+ lecture_fr:[
+  {emoji:'🔤',text:'Première lettre de « livre » ?',choices:['l','v','b'],answer:'l'},
+  {emoji:'🔤',text:'Première lettre de « maison » ?',choices:['m','s','n'],answer:'m'},
+  {emoji:'🔤',text:'Première lettre de « école » ?',choices:['c','é','l'],answer:'é'},
+  {emoji:'🔤',text:'Première lettre de « bateau » ?',choices:['b','t','e'],answer:'b'},
+  {emoji:'🔤',text:'Première lettre de « soleil » ?',choices:['s','o','l'],answer:'s'}],
+ vocab_fr:[
+  {emoji:'☀️',text:'Quel mot signifie le contraire de « nuit » ?',choices:['jour','soir','pluie'],answer:'jour'},
+  {emoji:'🐘',text:'Quel animal est le plus grand ?',choices:['souris','éléphant','fourmi'],answer:'éléphant'},
+  {emoji:'🍋',text:'Quel goût a généralement un citron ?',choices:['sucré','salé','acide'],answer:'acide'},
+  {emoji:'🔥',text:'Quel mot décrit quelque chose de très chaud ?',choices:['froid','brûlant','mouillé'],answer:'brûlant'},
+  {emoji:'🌧️',text:'Que voit-on tomber quand il pleut ?',choices:['neige','pluie','sable'],answer:'pluie'}],
+ mots_en:[
+  {emoji:'🐱',text:'Choose the English word for « chat ».',choices:['dog','cat','bird'],answer:'cat'},
+  {emoji:'🐶',text:'Choose the English word for « chien ».',choices:['dog','fish','house'],answer:'dog'},
+  {emoji:'🍎',text:'Choose the English word for « pomme ».',choices:['apple','car','book'],answer:'apple'},
+  {emoji:'🏠',text:'Choose the English word for « maison ».',choices:['tree','house','sun'],answer:'house'},
+  {emoji:'📖',text:'Choose the English word for « livre ».',choices:['chair','book','door'],answer:'book'}],
+ couleurs_en:[
+  {emoji:'🔴',text:'What color is red?',choices:['blue','green','red'],answer:'red'},
+  {emoji:'🔵',text:'What color is blue?',choices:['blue','yellow','black'],answer:'blue'},
+  {emoji:'🟢',text:'What color is green?',choices:['green','red','white'],answer:'green'},
+  {emoji:'🟡',text:'What color is yellow?',choices:['purple','yellow','brown'],answer:'yellow'},
+  {emoji:'⚫',text:'What color is black?',choices:['orange','pink','black'],answer:'black'}],
+ comprehension_en:[
+  {emoji:'🐱',text:'The cat is small. Is the cat small?',choices:['Yes','No','I don’t know'],answer:'Yes'},
+  {emoji:'☀️',text:'The sun is yellow. What color is the sun?',choices:['blue','yellow','green'],answer:'yellow'},
+  {emoji:'🍎',text:'A boy eats an apple. What does he eat?',choices:['a car','an apple','a book'],answer:'an apple'},
+  {emoji:'🐶',text:'The dog runs fast. What animal runs?',choices:['the cat','the dog','the bird'],answer:'the dog'},
+  {emoji:'🏠',text:'The house is big. Is the house big?',choices:['Yes','No','Maybe'],answer:'Yes'}]
+};
+const $=id=>document.getElementById(id);const el={stars:$('stars'),done:$('done'),profile:$('profile'),mission:$('mission'),missionBtn:$('missionBtn'),home:$('home'),quiz:$('quiz'),progress:$('progress'),level:$('level'),question:$('question'),next:$('next'),quit:$('quit'),result:$('result')};
+let state={skills:{},stars:0,done:0};try{state=JSON.parse(localStorage.getItem('aylanV4')||'{}')}catch(e){}state.skills??={};state.stars??=0;state.done??=0;
+function ensure(k){return state.skills[k]??={attempts:0,correct:0,recent:[],streak:0,bestStreak:0,last:null,due:null,errorTypes:{}}}
+function score(k){const s=ensure(k);if(!s.attempts)return 0;const acc=100*s.correct/s.attempts;const recent=s.recent.length?100*s.recent.filter(Boolean).length/s.recent.length:acc;const consistency=s.bestStreak>=4?10:s.bestStreak>=2?5:0;return Math.round(Math.min(100,acc*.65+recent*.25+consistency))}
+function level(k){const p=score(k);return p<40?1:p<60?2:p<80?3:4}function levelName(n){return ['','🔴 Découverte','🟠 En progression','🟡 Maîtrise','🟢 Avancé'][n]}
+function today(){return new Date().toISOString().slice(0,10)}function save(){localStorage.setItem('aylanV4',JSON.stringify(state))}
+function due(k){const s=ensure(k);return s.due&&s.due<=today()}
+function chooseSkill(){return Object.keys(SK).sort((a,b)=>{const A=ensure(a),B=ensure(b);const pa=score(a)+(due(a)?-20:0),pb=score(b)+(due(b)?-20:0);if(!A.attempts&&!B.attempts)return a.localeCompare(b);if(!A.attempts)return -1;if(!B.attempts)return 1;return pa-pb})[0]}
+function reason(k){const s=ensure(k);if(!s.attempts)return 'Cette compétence n’a pas encore été explorée.';if(s.recent.slice(-3).length===3&&s.recent.slice(-3).every(x=>!x))return 'Trois erreurs de suite : on revient à une étape plus simple.';if(due(k))return 'Une révision est due : on consolide avant d’avancer.';if(score(k)<60)return 'On consolide les bases avec des exercices adaptés.';if(score(k)<80)return 'Tu progresses : on mélange les exercices.';return 'Tu réussis bien : on augmente doucement le défi.'}
+function render(){el.stars.textContent=state.stars;el.done.textContent=state.done;el.profile.innerHTML=Object.entries(SK).map(([k,n])=>{const s=ensure(k),p=score(k);return `<div class="skill"><b>${n}</b><div><span class="tag">${levelName(level(k))}</span><span class="tag">${p}%</span>${due(k)?'<span class="tag">🔁 Révision</span>':''}</div><div class="bar"><div class="fill" style="width:${p}%"></div></div><div class="small">${s.attempts} essais · ${s.correct} réussites</div></div>`}).join('');const w=chooseSkill();el.mission.innerHTML=`<b>${SK[w]}</b> — ${levelName(level(w))}<br><span class="small">${reason(w)}</span>`}
+function validateQuestion(q){return !!q.text&&Array.isArray(q.choices)&&q.choices.length===3&&new Set(q.choices.map(String)).size===3&&q.choices.some(x=>String(x)===String(q.answer))}
+function pick(arr){const q=arr[Math.floor(Math.random()*arr.length)];return {...q,choices:shuffle([...q.choices])}}
+function choicesFor(ans,l){const vals=new Set([ans]);const deltas=l===1?[1,-1,2]:l===2?[1,-1,2,-2,3]:[1,-1,2,-2,5];let guard=0;while(vals.size<3&&guard++<30){const d=deltas[rand(0,deltas.length-1)];if(ans+d>=0)vals.add(ans+d)}return shuffle([...vals].map(String))}
+function numeric(k,l){let a,b,ans,text,emoji;if(k==='addition'){const max=[10,20,50,100][l-1];a=rand(0,max);b=rand(0,max-a);ans=a+b;text=`${a} + ${b} = ?`;emoji='➕'}else if(k==='soustraction'){const max=[10,20,50,100][l-1];a=rand(1,max);b=rand(0,a);ans=a-b;text=`${a} − ${b} = ?`;emoji='➖'}else if(k==='suites'){const max=[10,30,100,200][l-1];const start=rand(1,Math.max(1,max-10));const step=rand(1,l===1?2:l===2?4:10);ans=start+step*3;text=`${start}, ${start+step}, ${start+step*2}, ?`;emoji='🔢'}else{a=rand(1,[10,30,100,500][l-1]);b=rand(1,[10,30,100,500][l-1]);while(a===b)b=rand(1,[10,30,100,500][l-1]);ans=Math.max(a,b);text=`Quel est le plus grand : ${a} ou ${b} ?`;emoji='⚖️'}return {emoji,text,choices:choicesFor(ans,l),answer:String(ans),kind:k}}
+function logic(l){const step=rand(1,l===1?2:l===2?4:7),start=rand(1,10),ans=start+step*3;return {emoji:'🧩',text:`${start}, ${start+step}, ${start+step*2}, ?`,choices:choicesFor(ans,l),answer:String(ans),kind:'logique'}}
+function gen(k){const l=level(k);let q;if(BANK[k])q=pick(BANK[k]);else if(['addition','soustraction','suites','comparaison'].includes(k))q=numeric(k,l);else q=logic(l);if(!validateQuestion(q))throw new Error('Question invalide: '+k);return q}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function keysFor(cat){if(cat==='evaluation')return Object.keys(SK);if(cat==='calcul')return ['addition','soustraction','suites','comparaison'];if(cat==='arabe')return ['mots_ar','lettres_ar','vocab_ar'];if(cat==='francais')return ['mots_fr','lecture_fr','vocab_fr'];if(cat==='anglais')return ['mots_en','couleurs_en','comprehension_en'];return ['logique']}
+function build(cat){return shuffle(keysFor(cat).slice()).map(k=>({...gen(k),skill:k}))}
+let quiz=[],qi=0,qscore=0,current=null,currentCat='';
+function start(cat,forced=null){currentCat=cat;quiz=forced?Array.from({length:6},()=>({...gen(forced),skill:forced})):build(cat);qi=0;qscore=0;el.result.classList.add('hidden');el.home.classList.add('hidden');el.quiz.classList.remove('hidden');show()}
+function show(){current=quiz[qi];el.progress.textContent=`Question ${qi+1} / ${quiz.length}`;el.level.textContent=levelName(level(current.skill));el.question.innerHTML=`<div class="emoji">${current.emoji}</div><h2>${current.text}</h2><div class="choices">${current.choices.map(x=>`<button class="choice" data-x="${esc(x)}">${x}</button>`).join('')}</div><div id="feedback" class="feedback"></div>`;el.next.classList.add('hidden');el.question.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.x),{once:true}))}
+function esc(s){return String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function errorType(q,value){if(['addition','soustraction'].includes(q.kind)){const diff=Math.abs(Number(value)-Number(q.answer));return diff===1?'calcul_proche':diff<=3?'calcul_petit_ecart':'calcul_ecart'}if(['suites','logique'].includes(q.kind))return 'regle_ou_suite';if(q.kind==='comparaison')return 'comparaison';return 'vocabulaire'}
+function nextReview(p,ok){const d=new Date();const days=!ok||p<40?1:p<60?2:p<80?4:7;d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+async function answer(value){const q=current,s=ensure(q.skill),ok=String(value)===String(q.answer);if(ok){qscore++;s.correct++;s.streak++;s.bestStreak=Math.max(s.bestStreak,s.streak)}else{s.streak=0;const t=errorType(q,value);s.errorTypes[t]=(s.errorTypes[t]||0)+1}s.attempts++;s.recent=(s.recent||[]).concat(ok).slice(-8);s.last=new Date().toISOString();s.due=nextReview(score(q.skill),ok);state.done++;if(ok)state.stars+=2;save();el.question.querySelectorAll('.choice').forEach(b=>{b.disabled=true;if(String(b.dataset.x)===String(q.answer))b.classList.add('correct');if(String(b.dataset.x)===String(value)&&!ok)b.classList.add('wrong')});$('feedback').textContent=ok?(s.streak>=3?'🔥 Super série !':'🎉 Bravo !'):`💪 La bonne réponse est « ${q.answer} ». On reverra cette notion.`;el.next.classList.remove('hidden');render();try{await fetch('/api/results',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({skill:q.skill,subject:'v4',question:q.text,answer:value,correctAnswer:q.answer,correct:ok,difficulty:level(q.skill),errorType:ok?null:errorType(q,value),engine:'v4-audited'})})}catch(e){}}
+function finish(){el.quiz.classList.add('hidden');el.result.classList.remove('hidden');const pct=Math.round(100*qscore/quiz.length);el.result.innerHTML=`<div class="big">${pct>=80?'🏆':pct>=60?'🌟':'💪'}</div><h2>Mission terminée !</h2><p><strong>${qscore} / ${quiz.length}</strong> bonnes réponses</p><div class="note">${pct>=80?'Excellent travail !':'Chaque erreur nous aide à savoir quoi pratiquer ensuite.'}</div><div class="actions"><button id="again">Recommencer</button><button id="homeBtn" class="secondary">Retour aux missions</button></div>`;$('again').onclick=()=>start(currentCat,currentCat==='mission'?chooseSkill():null);$('homeBtn').onclick=()=>{el.result.classList.add('hidden');el.home.classList.remove('hidden');render()}}
+function home(){el.home.innerHTML=Object.entries(CAT).map(([k,v])=>`<button class="card" data-cat="${k}"><span>${v[0]}</span><b>${v[1]}</b><small>${v[2]}</small></button>`).join('');el.home.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>start(b.dataset.cat))}
+el.next.onclick=()=>{if(qi<quiz.length-1){qi++;show()}else finish()};el.quit.onclick=()=>{el.quiz.classList.add('hidden');el.result.classList.add('hidden');el.home.classList.remove('hidden');render()};el.missionBtn.onclick=()=>{currentCat='mission';start('mission',chooseSkill())};el.back.onclick=()=>location.href='/';home();render();
+/* AUDIT INTÉGRÉ : chaque question statique doit avoir une réponse unique présente dans ses choix. */
+function runAudit(){let bad=[];for(const [k,arr] of Object.entries(BANK)){arr.forEach((q,i)=>{if(!validateQuestion(q))bad.push(k+':'+i)});for(let i=0;i<100;i++){try{const q=gen(k);if(!validateQuestion(q))bad.push(k+':generated')}catch(e){bad.push(k+':exception')}}}for(const k of ['addition','soustraction','suites','comparaison','logique'])for(let i=0;i<200;i++){try{if(!validateQuestion(gen(k)))bad.push(k+':generated')}catch(e){bad.push(k+':exception')}}return bad}
+window.aylanAudit=runAudit;
+</script></body></html>
